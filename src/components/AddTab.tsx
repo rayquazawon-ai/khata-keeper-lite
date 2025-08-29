@@ -1,16 +1,35 @@
 import { Package, UserPlus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { AddProductForm } from "@/components/AddProductForm";
+import { AddCustomerForm } from "@/components/AddCustomerForm";
 
 export function AddTab() {
+  const [currentView, setCurrentView] = useState<'main' | 'add-product' | 'add-customer'>('main');
+
   const handleAddProduct = () => {
-    // TODO: Navigate to add product screen
-    console.log("Add new product");
+    setCurrentView('add-product');
   };
 
   const handleAddCustomer = () => {
-    // TODO: Navigate to add customer screen
-    console.log("Add new customer");
+    setCurrentView('add-customer');
   };
+
+  const handleBack = () => {
+    setCurrentView('main');
+  };
+
+  const handleSuccess = () => {
+    setCurrentView('main');
+  };
+
+  if (currentView === 'add-product') {
+    return <AddProductForm onBack={handleBack} onSuccess={handleSuccess} />;
+  }
+
+  if (currentView === 'add-customer') {
+    return <AddCustomerForm onBack={handleBack} onSuccess={handleSuccess} />;
+  }
 
   const quickActions = [
     {
