@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { InventoryTab } from "@/components/InventoryTab";
+import { KhataTab } from "@/components/KhataTab";
+import { AddTab } from "@/components/AddTab";
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("inventory");
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "inventory":
+        return <InventoryTab />;
+      case "khata":
+        return <KhataTab />;
+      case "add":
+        return <AddTab />;
+      default:
+        return <InventoryTab />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <MobileLayout activeTab={activeTab} onTabChange={setActiveTab}>
+      {renderTabContent()}
+    </MobileLayout>
   );
 };
 
