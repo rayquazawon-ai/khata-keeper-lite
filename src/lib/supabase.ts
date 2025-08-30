@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client'
 
+// Export the client for direct use
+export { supabase }
+
 // Database Types
 export interface Product {
   id: string
