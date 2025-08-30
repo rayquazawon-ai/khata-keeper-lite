@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { createProduct, uploadProductPhoto } from "@/lib/supabase";
+import { createProduct, uploadProductPhoto, updateProduct } from "@/lib/supabase";
 
 interface AddProductFormProps {
   onBack: () => void;
@@ -46,6 +46,26 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.product_name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Product name is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (parseFloat(formData.selling_price) < parseFloat(formData.lowest_selling_price)) {
+      toast({
+        title: "Validation Error", 
+        description: "Selling price cannot be lower than lowest selling price.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -69,7 +89,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
         );
         
         // Update product with photo URLs
-        // Note: You might want to add an updateProduct function to supabase.ts
+        await updateProduct(product.id, { photos: uploadedUrls });
       }
 
       toast({

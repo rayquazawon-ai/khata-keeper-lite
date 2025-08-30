@@ -83,3 +83,35 @@ export const uploadProductPhoto = async (file: File, productId: string) => {
 
   return data.publicUrl
 }
+
+export const updateProduct = async (id: string, updates: Partial<Product>) => {
+  const { data, error } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const getProducts = async () => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  return data
+}
+
+export const getCustomers = async () => {
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*')
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  return data
+}

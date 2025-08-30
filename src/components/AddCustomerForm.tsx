@@ -23,6 +23,37 @@ export function AddCustomerForm({ onBack, onSuccess }: AddCustomerFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.customer_name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.customer_phone.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Customer phone is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate phone number format (basic)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.customer_phone.replace(/\D/g, ''))) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid 10-digit phone number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
