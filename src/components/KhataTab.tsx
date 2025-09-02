@@ -1,54 +1,107 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchBar } from "./SearchBar";
 import { CustomerCard } from "./CustomerCard";
-
-// Mock data - in real app this would come from your backend
-const mockCustomers = [
-  {
-    id: "1",
-    customerName: "Ramesh Kumar",
-    customerPhone: "+91 98765 43210",
-    totalDues: 1250.50,
-    lastEntry: new Date("2024-01-15")
-  },
-  {
-    id: "2",
-    customerName: "Priya Electronics Store",
-    customerPhone: "+91 87654 32109",
-    totalDues: 0,
-    lastEntry: new Date("2024-01-12")
-  },
-  {
-    id: "3",
-    customerName: "Suresh Electrical Works",
-    customerPhone: "+91 76543 21098",
-    totalDues: 875.25,
-    lastEntry: new Date("2024-01-10")
-  },
-  {
-    id: "4",
-    customerName: "Home Depot Solutions",
-    customerPhone: "+91 65432 10987",
-    totalDues: 2150.00,
-    lastEntry: new Date("2024-01-08")
-  }
-];
+import { CustomerDetailsView } from "./CustomerDetailsView";
+import { EditCustomerForm } from "./EditCustomerForm";
+import { getCustomers, deleteCustomer, Customer } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 export function KhataTab() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentView, setCurrentView] = useState<'list' | 'details' | 'edit'>('list');
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const data = await getCustomers();
+      setCustomers(data || []);
+    } catch (error) {
+      console.error("Error loading customers:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load customers.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
-  const filteredCustomers = mockCustomers.filter(customer =>
-    customer.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.customerPhone.includes(searchTerm)
+  const filteredCustomers = customers.filter(customer =>
+    customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.customer_phone.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalDues = mockCustomers.reduce((sum, customer) => sum + customer.totalDues, 0);
-  const customersWithDues = mockCustomers.filter(c => c.totalDues > 0).length;
+  const totalDues = customers.reduce((sum, customer) => sum + (customer.total_dues || 0), 0);
+  const customersWithDues = customers.filter(c => (c.total_dues || 0) > 0).length;
 
-  const handleCustomerClick = (customer: any) => {
-    // TODO: Navigate to customer details screen
-    console.log("View customer:", customer);
+  const handleCustomerClick = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setCurrentView('details');
   };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setCurrentView('edit');
+  };
+
+  const handleDeleteCustomer = async (customerId: string) => {
+    if (!confirm("Are you sure you want to delete this customer? All their khata entries will also be deleted.")) return;
+
+    try {
+      await deleteCustomer(customerId);
+      toast({
+        title: "Customer Deleted",
+        description: "Customer has been deleted successfully.",
+      });
+      await loadCustomers();
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete customer. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSuccess = async () => {
+    setCurrentView('list');
+    setSelectedCustomer(null);
+    await loadCustomers();
+  };
+
+  // Show customer details
+  if (currentView === 'details' && selectedCustomer) {
+    return (
+      <CustomerDetailsView
+        customer={selectedCustomer}
+        onBack={() => setCurrentView('list')}
+        onEditCustomer={handleEditCustomer}
+      />
+    );
+  }
+
+  // Show edit customer form
+  if (currentView === 'edit' && selectedCustomer) {
+    return (
+      <EditCustomerForm
+        customer={selectedCustomer}
+        onBack={() => setCurrentView('list')}
+        onSuccess={handleSuccess}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -78,19 +131,29 @@ export function KhataTab() {
       />
 
       {/* Customer List */}
-      <div className="space-y-3">
-        {filteredCustomers.map((customer) => (
-          <CustomerCard
-            key={customer.id}
-            customer={customer}
-            onClick={handleCustomerClick}
-          />
-        ))}
-      </div>
-
-      {filteredCustomers.length === 0 && (
+      {loading ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No customers found</p>
+          <p className="text-muted-foreground">Loading customers...</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredCustomers.map((customer) => (
+            <CustomerCard
+              key={customer.id}
+              customer={customer}
+              onClick={handleCustomerClick}
+              onEdit={handleEditCustomer}
+              onDelete={handleDeleteCustomer}
+            />
+          ))}
+        </div>
+      )}
+
+      {!loading && filteredCustomers.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            {customers.length === 0 ? "No customers found. Add your first customer!" : "No customers match your search."}
+          </p>
         </div>
       )}
     </div>

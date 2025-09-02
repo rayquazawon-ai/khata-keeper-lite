@@ -29,15 +29,11 @@ export interface Customer {
 export interface KhataEntry {
   id: string
   customer_id: string
-  date: string
-  products_taken: Array<{
-    product_id: string
-    product_name: string
-    quantity: number
-  }>
-  amount_paid: number
-  remaining_due: number
-  bill_photo_url?: string
+  date: string | null
+  products_taken: any // JSON field from database
+  amount_paid: number | null
+  remaining_due: number | null
+  bill_photo_url?: string | null
   created_at: string
 }
 
@@ -112,4 +108,84 @@ export const getCustomers = async () => {
   
   if (error) throw error
   return data
+}
+
+export const updateCustomer = async (id: string, updates: Partial<Customer>) => {
+  const { data, error } = await supabase
+    .from('customers')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const deleteCustomer = async (id: string) => {
+  const { error } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
+  
+  if (error) throw error
+}
+
+export const getKhataEntries = async () => {
+  const { data, error } = await supabase
+    .from('khata_entries')
+    .select(`
+      *,
+      customers (
+        customer_name,
+        customer_phone
+      )
+    `)
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  return data
+}
+
+export const getKhataEntriesByCustomer = async (customerId: string) => {
+  const { data, error } = await supabase
+    .from('khata_entries')
+    .select('*')
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: false })
+  
+  if (error) throw error
+  return data
+}
+
+export const createKhataEntry = async (entry: Omit<KhataEntry, 'id' | 'created_at'>) => {
+  const { data, error } = await supabase
+    .from('khata_entries')
+    .insert([entry])
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const updateKhataEntry = async (id: string, updates: Partial<KhataEntry>) => {
+  const { data, error } = await supabase
+    .from('khata_entries')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
+export const deleteKhataEntry = async (id: string) => {
+  const { error } = await supabase
+    .from('khata_entries')
+    .delete()
+    .eq('id', id)
+  
+  if (error) throw error
 }
