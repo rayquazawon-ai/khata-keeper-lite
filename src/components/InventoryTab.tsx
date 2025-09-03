@@ -1,72 +1,96 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { ProductCard } from "./ProductCard";
-
-// Mock data - in real app this would come from your backend
-const mockProducts = [
-  {
-    id: "1",
-    productName: "LED Bulb 9W Cool White",
-    costPrice: 45,
-    sellingPrice: 65,
-    lowestSellingPrice: 55,
-    quantity: 25,
-    photos: []
-  },
-  {
-    id: "2", 
-    productName: "Extension Cord 5 Meter",
-    costPrice: 150,
-    sellingPrice: 220,
-    lowestSellingPrice: 190,
-    quantity: 2,
-    photos: []
-  },
-  {
-    id: "3",
-    productName: "Wall Socket 2 Pin",
-    costPrice: 25,
-    sellingPrice: 40,
-    lowestSellingPrice: 30,
-    quantity: 0,
-    photos: []
-  },
-  {
-    id: "4",
-    productName: "Table Fan 16 Inch",
-    costPrice: 1200,
-    sellingPrice: 1650,
-    lowestSellingPrice: 1400,
-    quantity: undefined,
-    photos: []
-  }
-];
+import { EditProductForm } from "./EditProductForm";
+import { supabase } from "@/integrations/supabase/client";
 
 export function InventoryTab() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products from database
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Transform data to match component expectations
+      const transformedProducts = data?.map(product => ({
+        id: product.id,
+        productName: product.product_name,
+        costPrice: product.cost_price,
+        sellingPrice: product.selling_price,
+        lowestSellingPrice: product.lowest_selling_price,
+        quantity: product.quantity,
+        photos: product.photos || []
+      })) || [];
+
+      setProducts(transformedProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
-  const filteredProducts = mockProducts.filter(product =>
+  const filteredProducts = products.filter(product =>
     product.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const lowStockCount = mockProducts.filter(p => 
+  const lowStockCount = products.filter(p => 
     p.quantity !== undefined && p.quantity < 5
   ).length;
 
-  const noQuantityCount = mockProducts.filter(p => 
+  const noQuantityCount = products.filter(p => 
     p.quantity === undefined
   ).length;
 
   const handleEdit = (product: any) => {
-    // TODO: Navigate to edit product screen
-    console.log("Edit product:", product);
+    // Convert mock data format to expected format
+    const editableProduct = {
+      id: product.id,
+      product_name: product.productName,
+      cost_price: product.costPrice,
+      selling_price: product.sellingPrice,
+      lowest_selling_price: product.lowestSellingPrice,
+      discount_percent: undefined,
+      photos: product.photos || []
+    };
+    setEditingProduct(editableProduct);
+  };
+
+  const handleEditSuccess = () => {
+    setEditingProduct(null);
+    // Refresh products from database
+    fetchProducts();
   };
 
   const handleAddToKhata = (product: any) => {
     // TODO: Navigate to add khata entry screen
     console.log("Add to khata:", product);
   };
+
+  // Show edit form if editing
+  if (editingProduct) {
+    return (
+      <EditProductForm
+        product={editingProduct}
+        onBack={() => setEditingProduct(null)}
+        onSuccess={handleEditSuccess}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -95,19 +119,26 @@ export function InventoryTab() {
         value={searchTerm}
         onChange={setSearchTerm}
         placeholder="Search products..."
+        suggestions={products.map(p => p.productName)}
       />
 
       {/* Product Grid */}
-      <div className="product-grid">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onEdit={handleEdit}
-            onAddToKhata={handleAddToKhata}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading products...</p>
+        </div>
+      ) : (
+        <div className="product-grid">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onEdit={handleEdit}
+              onAddToKhata={handleAddToKhata}
+            />
+          ))}
+        </div>
+      )}
 
       {filteredProducts.length === 0 && (
         <div className="text-center py-12">

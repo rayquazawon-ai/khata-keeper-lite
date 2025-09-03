@@ -79,26 +79,30 @@
   /* Modern Glass Button Styles */
   .btn-primary {
     @apply bg-gradient-to-r from-primary to-primary-glow text-primary-foreground;
-    @apply px-8 py-4 rounded-2xl font-semibold shadow-modern;
-    @apply hover:shadow-modern hover:scale-105 transition-all duration-400;
+    @apply px-8 py-4 rounded-2xl font-semibold shadow-lg;
+    @apply hover:shadow-xl hover:scale-105 transition-all duration-300;
     @apply active:scale-95 backdrop-blur-sm;
   }
   
   .btn-secondary {
     @apply bg-gradient-to-r from-secondary/80 to-secondary/60 text-secondary-foreground;
     @apply border border-border/50 backdrop-blur-md;
-    @apply px-8 py-4 rounded-2xl font-semibold;
+    @apply px-8 py-4 rounded-2xl font-semibold shadow-md;
     @apply hover:bg-secondary/90 hover:scale-105 transition-all duration-300;
     @apply active:scale-95;
     box-shadow: var(--shadow-glass);
   }
 
   /* Modern Glass Card */
-  .card-electric {
+  .card-modern {
     @apply bg-gradient-to-br from-card/90 to-card/60 border border-border/50;
-    @apply rounded-2xl backdrop-blur-xl shadow-card;
-    @apply hover:shadow-modern transition-all duration-400;
+    @apply rounded-2xl backdrop-blur-xl shadow-xl;
+    @apply hover:shadow-2xl transition-all duration-300;
     box-shadow: var(--shadow-glass);
+  }
+
+  .card-electric {
+    @apply card-modern;
   }
 
   /* Enhanced Tab Navigation */
@@ -114,14 +118,13 @@
   
   .tab-item.active::after {
     @apply content-[''] absolute -bottom-1 left-1/2 transform -translate-x-1/2;
-    @apply w-2 h-2 bg-primary rounded-full;
-    @apply shadow-modern animate-pulse;
+    @apply w-2 h-2 bg-primary rounded-full shadow-lg animate-pulse;
   }
 
   /* Modern Input Styles */
   .input-electric {
     @apply bg-gradient-to-r from-input/80 to-input/60 border border-border/50;
-    @apply rounded-xl px-6 py-4 backdrop-blur-sm;
+    @apply rounded-xl px-6 py-4 backdrop-blur-sm shadow-md;
     @apply text-foreground placeholder:text-muted-foreground;
     @apply focus:border-primary/60 focus:ring-2 focus:ring-primary/20;
     @apply focus:scale-105 transition-all duration-300;
@@ -134,14 +137,14 @@
   }
   
   .search-input {
-    @apply input-electric pl-12 shadow-modern;
-    @apply hover:shadow-modern hover:scale-105 transition-all duration-300;
+    @apply input-electric pl-12 shadow-lg;
+    @apply hover:shadow-xl hover:scale-105 transition-all duration-300;
   }
   
   .search-results {
     @apply absolute top-full left-0 right-0 mt-2 z-50;
     @apply bg-gradient-to-br from-card/95 to-card/80 backdrop-blur-xl;
-    @apply border border-border/50 rounded-xl shadow-modern;
+    @apply border border-border/50 rounded-xl shadow-xl;
     @apply max-h-80 overflow-y-auto;
   }
 
@@ -154,13 +157,13 @@
   .status-low-stock {
     @apply bg-gradient-to-r from-warning/20 to-warning/10 text-warning;
     @apply border border-warning/30 rounded-xl px-3 py-2 text-sm font-semibold;
-    @apply shadow-modern backdrop-blur-sm;
+    @apply shadow-md backdrop-blur-sm;
   }
   
   .status-in-stock {
     @apply bg-gradient-to-r from-success/20 to-success/10 text-success;
     @apply border border-success/30 rounded-xl px-3 py-2 text-sm font-semibold;
-    @apply shadow-modern backdrop-blur-sm;
+    @apply shadow-md backdrop-blur-sm;
   }
 }
 
