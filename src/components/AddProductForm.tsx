@@ -23,8 +23,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
     cost_price: "",
     selling_price: "",
     lowest_selling_price: "",
-    discount_percent: "",
-    quantity: ""
+    discount_percent: ""
   });
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +75,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
         selling_price: parseFloat(formData.selling_price),
         lowest_selling_price: parseFloat(formData.lowest_selling_price),
         discount_percent: formData.discount_percent ? parseFloat(formData.discount_percent) : undefined,
-        quantity: formData.quantity ? parseInt(formData.quantity) : undefined,
+        quantity: null,
         photos: [] as string[]
       };
 
@@ -233,16 +232,6 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity (Stock)</Label>
-              <Input
-                id="quantity"
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                placeholder="Enter stock quantity"
-              />
-            </div>
           </div>
 
           {/* Submit Button */}

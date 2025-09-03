@@ -9,7 +9,6 @@ interface MobileLayoutProps {
 
 const tabs = [
   { id: "inventory", label: "Inventory", icon: Package },
-  { id: "khata", label: "Khata", icon: Users },
   { id: "add", label: "Add", icon: Plus },
 ];
 

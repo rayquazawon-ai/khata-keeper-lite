@@ -2,65 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Electric Store Inventory Design System - Dark Theme Optimized */
+/* Modern Store Inventory Design System */
 
 @layer base {
   :root {
-    /* Core Colors - Electric Theme */
-    --background: 222 47% 8%;
-    --foreground: 210 40% 95%;
+    /* Modern Glass Morphism Theme */
+    --background: 240 10% 4%;
+    --foreground: 240 10% 98%;
     
-    --card: 222 47% 10%;
-    --card-foreground: 210 40% 95%;
+    --card: 240 10% 6%;
+    --card-foreground: 240 10% 98%;
     
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 240 10% 98%;
     
-    /* Electric Blue Primary */
-    --primary: 218 100% 60%;
-    --primary-foreground: 222 47% 8%;
-    --primary-glow: 218 100% 70%;
+    /* Modern Gradient Primary */
+    --primary: 258 90% 66%;
+    --primary-foreground: 240 10% 4%;
+    --primary-glow: 258 90% 76%;
     
-    /* Subtle Grays */
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 210 40% 85%;
+    /* Refined Neutrals */
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 240 10% 88%;
     
-    --muted: 222 47% 12%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 240 10% 8%;
+    --muted-foreground: 240 5% 64%;
     
-    --accent: 45 100% 55%;
-    --accent-foreground: 222 47% 8%;
+    --accent: 142 86% 56%;
+    --accent-foreground: 240 10% 4%;
     
-    /* Status Colors */
-    --success: 145 70% 50%;
-    --success-foreground: 210 40% 95%;
+    /* Modern Status Colors */
+    --success: 142 86% 56%;
+    --success-foreground: 240 10% 98%;
     
-    --warning: 25 100% 60%;
-    --warning-foreground: 222 47% 8%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 10% 4%;
     
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 210 40% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 240 10% 98%;
     
     /* Interface Elements */
-    --border: 222 47% 18%;
-    --input: 222 47% 15%;
-    --ring: 218 100% 60%;
+    --border: 240 10% 14%;
+    --input: 240 10% 8%;
+    --ring: 258 90% 66%;
     
-    --radius: 0.75rem;
+    --radius: 1rem;
     
-    /* Electric Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(218 100% 60%), hsl(218 100% 70%));
-    --gradient-electric: linear-gradient(135deg, hsl(218 100% 60%), hsl(190 100% 50%));
-    --gradient-warning: linear-gradient(135deg, hsl(45 100% 55%), hsl(25 100% 60%));
+    /* Modern Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%), hsl(258 90% 76%));
+    --gradient-modern: linear-gradient(135deg, hsl(258 90% 66%), hsl(142 86% 56%));
+    --gradient-glass: linear-gradient(135deg, hsl(240 10% 8% / 0.8), hsl(240 10% 12% / 0.8));
     
-    /* Shadows & Glows */
-    --shadow-electric: 0 0 30px hsl(218 100% 60% / 0.3);
-    --shadow-card: 0 4px 20px hsl(222 47% 4% / 0.5);
-    --shadow-input: inset 0 2px 4px hsl(222 47% 4% / 0.3);
+    /* Modern Shadows & Effects */
+    --shadow-modern: 0 8px 32px hsl(258 90% 66% / 0.15);
+    --shadow-card: 0 8px 32px hsl(240 10% 2% / 0.4);
+    --shadow-glass: inset 0 1px 0 hsl(240 10% 20% / 0.5);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s ease-out;
+    /* Smooth Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
@@ -76,71 +76,91 @@
 }
 
 @layer components {
-  /* Mobile-first button styles */
+  /* Modern Glass Button Styles */
   .btn-primary {
     @apply bg-gradient-to-r from-primary to-primary-glow text-primary-foreground;
-    @apply px-6 py-3 rounded-xl font-medium shadow-lg;
-    @apply hover:shadow-electric transition-all duration-300;
-    @apply active:scale-95;
+    @apply px-8 py-4 rounded-2xl font-semibold shadow-modern;
+    @apply hover:shadow-modern hover:scale-105 transition-all duration-400;
+    @apply active:scale-95 backdrop-blur-sm;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground border border-border;
-    @apply px-6 py-3 rounded-xl font-medium;
-    @apply hover:bg-secondary/80 transition-all duration-200;
+    @apply bg-gradient-to-r from-secondary/80 to-secondary/60 text-secondary-foreground;
+    @apply border border-border/50 backdrop-blur-md;
+    @apply px-8 py-4 rounded-2xl font-semibold;
+    @apply hover:bg-secondary/90 hover:scale-105 transition-all duration-300;
     @apply active:scale-95;
+    box-shadow: var(--shadow-glass);
   }
 
-  /* Card styles */
+  /* Modern Glass Card */
   .card-electric {
-    @apply bg-card border border-border rounded-xl;
-    @apply shadow-card backdrop-blur-sm;
+    @apply bg-gradient-to-br from-card/90 to-card/60 border border-border/50;
+    @apply rounded-2xl backdrop-blur-xl shadow-card;
+    @apply hover:shadow-modern transition-all duration-400;
+    box-shadow: var(--shadow-glass);
   }
 
-  /* Tab navigation */
+  /* Enhanced Tab Navigation */
   .tab-item {
-    @apply flex flex-col items-center justify-center;
-    @apply p-3 text-muted-foreground transition-all duration-200;
+    @apply flex flex-col items-center justify-center relative;
+    @apply p-4 text-muted-foreground transition-all duration-300;
+    @apply hover:scale-110 hover:text-primary/80;
   }
   
   .tab-item.active {
-    @apply text-primary;
+    @apply text-primary scale-110;
   }
   
-  .tab-item:not(.active):hover {
-    @apply text-foreground/70;
+  .tab-item.active::after {
+    @apply content-[''] absolute -bottom-1 left-1/2 transform -translate-x-1/2;
+    @apply w-2 h-2 bg-primary rounded-full;
+    @apply shadow-modern animate-pulse;
   }
 
-  /* Input styles */
+  /* Modern Input Styles */
   .input-electric {
-    @apply bg-input border border-border rounded-lg px-4 py-3;
+    @apply bg-gradient-to-r from-input/80 to-input/60 border border-border/50;
+    @apply rounded-xl px-6 py-4 backdrop-blur-sm;
     @apply text-foreground placeholder:text-muted-foreground;
-    @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
-    @apply transition-all duration-200;
-    box-shadow: var(--shadow-input);
+    @apply focus:border-primary/60 focus:ring-2 focus:ring-primary/20;
+    @apply focus:scale-105 transition-all duration-300;
+    box-shadow: var(--shadow-glass);
   }
 
-  /* Search styles */
+  /* Enhanced Search */
   .search-container {
     @apply relative w-full max-w-md;
   }
   
   .search-input {
-    @apply input-electric pl-10;
+    @apply input-electric pl-12 shadow-modern;
+    @apply hover:shadow-modern hover:scale-105 transition-all duration-300;
+  }
+  
+  .search-results {
+    @apply absolute top-full left-0 right-0 mt-2 z-50;
+    @apply bg-gradient-to-br from-card/95 to-card/80 backdrop-blur-xl;
+    @apply border border-border/50 rounded-xl shadow-modern;
+    @apply max-h-80 overflow-y-auto;
   }
 
-  /* Product grid */
+  /* Modern Product Grid */
   .product-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6;
   }
 
-  /* Status indicators */
+  /* Enhanced Status Indicators */
   .status-low-stock {
-    @apply bg-warning/10 text-warning border border-warning/20 rounded-lg px-2 py-1 text-xs font-medium;
+    @apply bg-gradient-to-r from-warning/20 to-warning/10 text-warning;
+    @apply border border-warning/30 rounded-xl px-3 py-2 text-sm font-semibold;
+    @apply shadow-modern backdrop-blur-sm;
   }
   
   .status-in-stock {
-    @apply bg-success/10 text-success border border-success/20 rounded-lg px-2 py-1 text-xs font-medium;
+    @apply bg-gradient-to-r from-success/20 to-success/10 text-success;
+    @apply border border-success/30 rounded-xl px-3 py-2 text-sm font-semibold;
+    @apply shadow-modern backdrop-blur-sm;
   }
 }
 
