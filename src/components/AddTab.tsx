@@ -1,18 +1,42 @@
-import { Package, UserPlus, Zap } from "lucide-react";
+import { Package, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddProductForm } from "@/components/AddProductForm";
-import { AddCustomerForm } from "@/components/AddCustomerForm";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AddTab() {
-  const [currentView, setCurrentView] = useState<'main' | 'add-product' | 'add-customer'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'add-product'>('main');
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+
+  // Fetch recent activity from database
+  useEffect(() => {
+    fetchRecentActivity();
+  }, []);
+
+  const fetchRecentActivity = async () => {
+    try {
+      // Get recent products
+      const { data: products } = await supabase
+        .from('products')
+        .select('product_name, created_at')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      // Transform to activity format
+      const activities = products?.map(product => ({
+        type: 'product_added',
+        description: `${product.product_name} added`,
+        timestamp: new Date(product.created_at).toLocaleString()
+      })) || [];
+
+      setRecentActivity(activities);
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
 
   const handleAddProduct = () => {
     setCurrentView('add-product');
-  };
-
-  const handleAddCustomer = () => {
-    setCurrentView('add-customer');
   };
 
   const handleBack = () => {
@@ -21,14 +45,12 @@ export function AddTab() {
 
   const handleSuccess = () => {
     setCurrentView('main');
+    // Refresh recent activity after adding a product
+    fetchRecentActivity();
   };
 
   if (currentView === 'add-product') {
     return <AddProductForm onBack={handleBack} onSuccess={handleSuccess} />;
-  }
-
-  if (currentView === 'add-customer') {
-    return <AddCustomerForm onBack={handleBack} onSuccess={handleSuccess} />;
   }
 
   const quickActions = [
@@ -38,13 +60,6 @@ export function AddTab() {
       icon: Package,
       action: handleAddProduct,
       color: "bg-primary/10 text-primary border-primary/20"
-    },
-    {
-      title: "Add Customer",
-      description: "Register a new customer",
-      icon: UserPlus,
-      action: handleAddCustomer,
-      color: "bg-accent/10 text-accent border-accent/20"
     }
   ];
 
@@ -95,18 +110,18 @@ export function AddTab() {
       <div className="card-electric p-4">
         <h3 className="font-semibold text-foreground mb-3">Recent Activity</h3>
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-muted-foreground">LED Bulb added</span>
-            <span className="text-xs text-muted-foreground">2 hours ago</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-muted-foreground">Ramesh Kumar - ₹125 paid</span>
-            <span className="text-xs text-muted-foreground">1 day ago</span>
-          </div>
-          <div className="flex justify-between items-center py-2">
-            <span className="text-muted-foreground">Extension Cord sold</span>
-            <span className="text-xs text-muted-foreground">2 days ago</span>
-          </div>
+          {recentActivity.length > 0 ? (
+            recentActivity.map((activity, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-b-0">
+                <span className="text-muted-foreground">{activity.description}</span>
+                <span className="text-xs text-muted-foreground">{activity.timestamp}</span>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
+              No recent activity
+            </div>
+          )}
         </div>
       </div>
 
