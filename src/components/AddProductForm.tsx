@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useOfflineStorage } from "@/hooks/useOfflineStorage";
+import { SyncManager } from "@/utils/syncManager";
 import { createProduct, uploadProductPhoto, updateProduct } from "@/lib/supabase";
 
 interface AddProductFormProps {
@@ -17,6 +19,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const { toast } = useToast();
+  const { isOnline, addProductOptimistic } = useOfflineStorage();
 
   const [formData, setFormData] = useState({
     product_name: "",
@@ -68,12 +71,58 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
     setLoading(true);
 
     try {
-      // Create product first
+      // Generate temporary ID for optimistic update
+      const tempId = crypto.randomUUID();
+      
+      // Create optimistic product data
+      const optimisticProduct = {
+        id: tempId,
+        productName: formData.product_name,
+        costPrice: parseFloat(formData.cost_price),
+        sellingPrice: parseFloat(formData.selling_price),
+        lowestSellingPrice: parseFloat(formData.lowest_selling_price),
+        photos: photoUrls, // Use preview URLs for immediate display
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      // Add to local state immediately (optimistic update)
+      addProductOptimistic(optimisticProduct);
+
+      // Show immediate success feedback
+      toast({
+        title: "Product Added",
+        description: isOnline ? `${formData.product_name} has been added to inventory.` : `${formData.product_name} added. Will sync when online.`,
+      });
+
+      // Navigate back immediately
+      onSuccess();
+
+      // Handle background operations
+      if (isOnline) {
+        // Background sync - don't await this
+        handleBackgroundSync(tempId, optimisticProduct);
+      }
+    } catch (error) {
+      console.error("Error creating product:", error);
+      toast({
+        title: "Error", 
+        description: "Failed to add product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBackgroundSync = async (tempId: string, optimisticProduct: any) => {
+    try {
+      // Create product in database
       const productData = {
-        product_name: formData.product_name,
-        cost_price: parseFloat(formData.cost_price),
-        selling_price: parseFloat(formData.selling_price),
-        lowest_selling_price: parseFloat(formData.lowest_selling_price),
+        product_name: optimisticProduct.productName,
+        cost_price: optimisticProduct.costPrice,
+        selling_price: optimisticProduct.sellingPrice,
+        lowest_selling_price: optimisticProduct.lowestSellingPrice,
         discount_percent: formData.discount_percent ? parseFloat(formData.discount_percent) : undefined,
         quantity: null,
         photos: [] as string[]
@@ -91,21 +140,10 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
         await updateProduct(product.id, { photos: uploadedUrls });
       }
 
-      toast({
-        title: "Product Added",
-        description: `${formData.product_name} has been added to inventory.`,
-      });
-
-      onSuccess();
+      console.log('Background sync completed for product:', product.id);
     } catch (error) {
-      console.error("Error creating product:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add product. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      console.error('Background sync failed:', error);
+      // Could show a subtle notification about sync failure
     }
   };
 

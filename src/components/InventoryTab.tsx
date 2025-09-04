@@ -3,7 +3,8 @@ import { AlertTriangle } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { ProductCard } from "./ProductCard";
 import { EditProductForm } from "./EditProductForm";
-import { supabase } from "@/integrations/supabase/client";
+import { useOfflineStorage } from "@/hooks/useOfflineStorage";
+import { SyncManager } from "@/utils/syncManager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,56 +20,74 @@ import { useToast } from "@/hooks/use-toast";
 export function InventoryTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const {
+    isOnline,
+    products,
+    pendingOps,
+    updateProducts,
+    deleteProductOptimistic,
+    clearPendingOperations
+  } = useOfflineStorage();
 
-  // Fetch products from database
+  // Fetch products and sync when online
   useEffect(() => {
     fetchProducts();
-  }, []);
+    
+    // Auto-sync when coming back online
+    if (isOnline && pendingOps.length > 0) {
+      syncPendingOperations();
+    }
+  }, [isOnline]);
 
   const fetchProducts = async () => {
+    if (!isOnline) {
+      // Use cached data when offline
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Transform data to match component expectations
-      const transformedProducts = data?.map(product => ({
-        id: product.id,
-        productName: product.product_name,
-        costPrice: product.cost_price,
-        sellingPrice: product.selling_price,
-        lowestSellingPrice: product.lowest_selling_price,
-        quantity: product.quantity,
-        photos: product.photos || []
-      })) || [];
-
-      setProducts(transformedProducts);
+      const syncManager = SyncManager.getInstance();
+      const latestProducts = await syncManager.fetchLatestProducts();
+      updateProducts(latestProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast({
+        title: "Sync Error",
+        description: "Using cached data. Will sync when online.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const syncPendingOperations = async () => {
+    try {
+      const syncManager = SyncManager.getInstance();
+      const success = await syncManager.syncPendingOperations(pendingOps);
+      
+      if (success) {
+        clearPendingOperations();
+        await fetchProducts(); // Refresh data after sync
+        toast({
+          title: "Synced",
+          description: "All changes have been synchronized.",
+        });
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
     }
   };
   
   const filteredProducts = products.filter(product =>
     product.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const lowStockCount = products.filter(p => 
-    p.quantity !== undefined && p.quantity < 5
-  ).length;
-
-  const noQuantityCount = products.filter(p => 
-    p.quantity === undefined
-  ).length;
 
   const handleEdit = (product: any) => {
     // Convert mock data format to expected format
@@ -86,8 +105,10 @@ export function InventoryTab() {
 
   const handleEditSuccess = () => {
     setEditingProduct(null);
-    // Refresh products from database
-    fetchProducts();
+    // Refresh products from database if online
+    if (isOnline) {
+      fetchProducts();
+    }
   };
 
   const handleDeleteClick = (productId: string) => {
@@ -98,32 +119,36 @@ export function InventoryTab() {
   const handleConfirmDelete = async () => {
     if (!productToDelete) return;
     
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productToDelete);
-
-      if (error) throw error;
-      
-      toast({
-        title: "Product deleted",
-        description: "The product has been successfully deleted.",
-      });
-      
-      // Refresh products list
-      fetchProducts();
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the product. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleteConfirmOpen(false);
-      setProductToDelete(null);
+    // Optimistically delete the product
+    deleteProductOptimistic(productToDelete);
+    
+    toast({
+      title: "Product deleted",
+      description: isOnline ? "The product has been deleted." : "Product will be deleted when online.",
+    });
+    
+    // If online, try to sync immediately
+    if (isOnline) {
+      try {
+        const syncManager = SyncManager.getInstance();
+        await syncManager.syncPendingOperations([{
+          id: productToDelete,
+          type: 'delete',
+          data: { id: productToDelete },
+          timestamp: Date.now()
+        }]);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        toast({
+          title: "Sync Error",
+          description: "Product deleted locally. Will sync when online.",
+          variant: "destructive",
+        });
+      }
     }
+    
+    setDeleteConfirmOpen(false);
+    setProductToDelete(null);
   };
 
   // Show edit form if editing
@@ -141,23 +166,13 @@ export function InventoryTab() {
     <div className="space-y-6">
       {/* Header Stats */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gradient mb-2">Inventory</h2>
+        <h2 className="text-2xl font-bold text-gradient mb-2">
+          Inventory
+          {!isOnline && <span className="text-xs bg-orange-500/20 text-orange-600 px-2 py-1 rounded-full ml-2">Offline</span>}
+          {pendingOps.length > 0 && <span className="text-xs bg-blue-500/20 text-blue-600 px-2 py-1 rounded-full ml-2">{pendingOps.length} pending</span>}
+        </h2>
         <p className="text-muted-foreground">Manage your products</p>
       </div>
-
-      {/* Warning Banner */}
-      {(lowStockCount > 0 || noQuantityCount > 0) && (
-        <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 animate-fade-in">
-          <div className="flex items-center gap-2 text-warning">
-            <AlertTriangle className="h-5 w-5" />
-            <span className="font-medium">Attention Required</span>
-          </div>
-          <div className="text-sm text-warning/80 mt-1">
-            {lowStockCount > 0 && `${lowStockCount} item(s) low in stock. `}
-            {noQuantityCount > 0 && `${noQuantityCount} item(s) missing quantity info.`}
-          </div>
-        </div>
-      )}
 
       {/* Search */}
       <SearchBar
