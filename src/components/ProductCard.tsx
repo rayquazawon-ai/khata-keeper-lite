@@ -18,8 +18,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
-  const hasLowStock = product.quantity !== undefined && product.quantity < 5;
-  const isOutOfStock = product.quantity !== undefined && product.quantity === 0;
   const hasPhoto = product.photos && product.photos.length > 0;
 
   return (
@@ -48,17 +46,6 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         
         <div className="flex items-center justify-between">
           <span className="text-primary font-bold">₹{product.sellingPrice}</span>
-          {product.quantity !== undefined && (
-            <span className={
-              isOutOfStock ? "status-low-stock" : 
-              hasLowStock ? "status-low-stock" : 
-              "status-in-stock"
-            }>
-              {isOutOfStock ? "Out of Stock" : 
-               hasLowStock ? `${product.quantity} left` : 
-               `${product.quantity} in stock`}
-            </span>
-          )}
         </div>
 
         <div className="text-xs text-muted-foreground space-y-1">
