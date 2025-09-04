@@ -1,4 +1,4 @@
-import { Package, Camera, Edit3 } from "lucide-react";
+import { Trash2, Camera, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Product {
@@ -14,10 +14,10 @@ interface Product {
 interface ProductCardProps {
   product: Product;
   onEdit: (product: Product) => void;
-  onAddToKhata: (product: Product) => void;
+  onDelete: (productId: string) => void;
 }
 
-export function ProductCard({ product, onEdit, onAddToKhata }: ProductCardProps) {
+export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
   const hasLowStock = product.quantity !== undefined && product.quantity < 5;
   const isOutOfStock = product.quantity !== undefined && product.quantity === 0;
   const hasPhoto = product.photos && product.photos.length > 0;
@@ -79,13 +79,13 @@ export function ProductCard({ product, onEdit, onAddToKhata }: ProductCardProps)
           Edit
         </Button>
         <Button
-          variant="default"
+          variant="destructive"
           size="sm"
-          onClick={() => onAddToKhata(product)}
-          className="flex-1 btn-primary"
+          onClick={() => onDelete(product.id)}
+          className="flex-1"
         >
-          <Package className="h-4 w-4 mr-1" />
-          Sell
+          <Trash2 className="h-4 w-4 mr-1" />
+          Delete
         </Button>
       </div>
     </div>

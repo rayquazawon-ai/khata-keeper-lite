@@ -76,9 +76,20 @@ export function InventoryTab() {
     fetchProducts();
   };
 
-  const handleAddToKhata = (product: any) => {
-    // TODO: Navigate to add khata entry screen
-    console.log("Add to khata:", product);
+  const handleDelete = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+      
+      // Refresh products list
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
 
   // Show edit form if editing
@@ -134,7 +145,7 @@ export function InventoryTab() {
               key={product.id}
               product={product}
               onEdit={handleEdit}
-              onAddToKhata={handleAddToKhata}
+              onDelete={handleDelete}
             />
           ))}
         </div>
