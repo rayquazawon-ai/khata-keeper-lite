@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { SyncManager } from "@/utils/syncManager";
 import { createProduct, uploadProductPhoto, updateProduct } from "@/lib/supabase";
+import { compressImage } from "@/utils/imageUtils";
 
 interface AddProductFormProps {
   onBack: () => void;
@@ -29,14 +30,34 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
     discount_percent: ""
   });
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    const newPhotos = [...photos, ...files].slice(0, 5); // Max 5 photos
-    setPhotos(newPhotos);
+    
+    try {
+      // Compress images to 720p for faster loading
+      const compressedFiles = await Promise.all(
+        files.map(file => compressImage(file, 720, 0.8))
+      );
+      
+      const newPhotos = [...photos, ...compressedFiles].slice(0, 5); // Max 5 photos
+      setPhotos(newPhotos);
 
-    // Create preview URLs
-    const newUrls = files.map(file => URL.createObjectURL(file));
-    setPhotoUrls([...photoUrls, ...newUrls].slice(0, 5));
+      // Create preview URLs from compressed images
+      const newUrls = compressedFiles.map(file => URL.createObjectURL(file));
+      setPhotoUrls([...photoUrls, ...newUrls].slice(0, 5));
+      
+      toast({
+        title: "Photos Added",
+        description: `${compressedFiles.length} photo(s) compressed and ready to upload.`,
+      });
+    } catch (error) {
+      console.error('Error compressing images:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process images. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const removePhoto = (index: number) => {
