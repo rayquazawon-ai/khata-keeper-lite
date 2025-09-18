@@ -46,6 +46,16 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
     setPhotoUrls(newUrls);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldId?: string) => {
+    if (e.key === 'Enter' && nextFieldId) {
+      e.preventDefault();
+      const nextField = document.getElementById(nextFieldId);
+      if (nextField) {
+        nextField.focus();
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -210,6 +220,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
                 id="product_name"
                 value={formData.product_name}
                 onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+                onKeyDown={(e) => handleKeyDown(e, 'cost_price')}
                 placeholder="Enter product name"
                 required
               />
@@ -224,6 +235,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
                   step="0.01"
                   value={formData.cost_price}
                   onChange={(e) => setFormData({ ...formData, cost_price: e.target.value })}
+                  onKeyDown={(e) => handleKeyDown(e, 'selling_price')}
                   placeholder="₹0.00"
                   required
                 />
@@ -237,6 +249,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
                   step="0.01"
                   value={formData.selling_price}
                   onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
+                  onKeyDown={(e) => handleKeyDown(e, 'lowest_selling_price')}
                   placeholder="₹0.00"
                   required
                 />
@@ -252,6 +265,7 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
                   step="0.01"
                   value={formData.lowest_selling_price}
                   onChange={(e) => setFormData({ ...formData, lowest_selling_price: e.target.value })}
+                  onKeyDown={(e) => handleKeyDown(e, 'discount_percent')}
                   placeholder="₹0.00"
                   required
                 />
@@ -265,6 +279,13 @@ export function AddProductForm({ onBack, onSuccess }: AddProductFormProps) {
                   step="0.1"
                   value={formData.discount_percent}
                   onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+                      if (submitButton) submitButton.click();
+                    }
+                  }}
                   placeholder="0"
                 />
               </div>
