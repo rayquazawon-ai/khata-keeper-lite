@@ -41,6 +41,14 @@
     --destructive: 0 80% 65%;
     --destructive-foreground: 210 40% 96%;
     
+    /* White Color Variants */
+    --white: 0 0% 100%;
+    --white-soft: 210 20% 98%;
+    --white-warm: 45 30% 97%;
+    --white-cool: 200 25% 98%;
+    --white-glass: 210 15% 95%;
+    --white-frost: 220 10% 96%;
+    
     /* Interface Elements */
     --border: 220 20% 22%;
     --input: 220 20% 15%;
@@ -189,5 +197,28 @@
   .bg-golden-glow {
     background: var(--gradient-primary);
     box-shadow: var(--shadow-electric);
+  }
+  
+  .card-white {
+    @apply bg-white-glass border border-white-cool/30 text-background;
+    @apply rounded-2xl backdrop-blur-xl shadow-xl;
+    @apply hover:shadow-2xl hover:border-primary/30 transition-all duration-300;
+  }
+  
+  .btn-white {
+    @apply bg-white-soft text-background border border-white-cool/50;
+    @apply hover:bg-white-warm hover:shadow-lg transition-all duration-300;
+  }
+  
+  .view-switcher {
+    @apply flex items-center gap-2 p-1 rounded-xl bg-card/60 backdrop-blur-md border border-border/50;
+  }
+  
+  .view-option {
+    @apply p-2 rounded-lg transition-all duration-200 hover:bg-white-glass/10;
+  }
+  
+  .view-option.active {
+    @apply bg-white-glass/20 text-primary border border-primary/30;
   }
 }

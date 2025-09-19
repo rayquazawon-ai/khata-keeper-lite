@@ -3,6 +3,10 @@ import { AlertTriangle } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { ProductCard } from "./ProductCard";
 import { EditProductForm } from "./EditProductForm";
+import { ViewSwitcher, ViewMode } from "./ViewSwitcher";
+import { ProductListView } from "./ProductViews/ProductListView";
+import { ProductTableView } from "./ProductViews/ProductTableView";
+import { ProductCardView } from "./ProductViews/ProductCardView";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
 import { SyncManager } from "@/utils/syncManager";
 import {
@@ -23,6 +27,7 @@ export function InventoryTab() {
   const [loading, setLoading] = useState(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const { toast } = useToast();
   
   const {
@@ -174,30 +179,62 @@ export function InventoryTab() {
         <p className="text-muted-foreground">Manage your products</p>
       </div>
 
-      {/* Search */}
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder="Search products..."
-        suggestions={products.map(p => p.productName)}
-      />
+      {/* Search & View Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search products..."
+          suggestions={products.map(p => p.productName)}
+        />
+        
+        <ViewSwitcher currentView={viewMode} onViewChange={setViewMode} />
+      </div>
 
-      {/* Product Grid */}
+      {/* Product Display */}
       {loading ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading products...</p>
         </div>
       ) : (
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
+        <>
+          {viewMode === "grid" && (
+            <div className="product-grid">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                />
+              ))}
+            </div>
+          )}
+          
+          {viewMode === "list" && (
+            <ProductListView
+              products={filteredProducts}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
             />
-          ))}
-        </div>
+          )}
+          
+          {viewMode === "table" && (
+            <ProductTableView
+              products={filteredProducts}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
+            />
+          )}
+          
+          {viewMode === "cards" && (
+            <ProductCardView
+              products={filteredProducts}
+              onEdit={handleEdit}
+              onDelete={handleDeleteClick}
+            />
+          )}
+        </>
       )}
 
       {filteredProducts.length === 0 && (
