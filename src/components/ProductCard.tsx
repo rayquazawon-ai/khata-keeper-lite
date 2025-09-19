@@ -46,11 +46,11 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
         
         <div className="flex items-center justify-between">
           <span className="text-primary font-bold">₹{product.sellingPrice}</span>
-        </div>
-
-        <div className="text-xs text-muted-foreground space-y-1">
-          <div>Cost: ₹{product.costPrice}</div>
-          <div>Min Price: ₹{product.lowestSellingPrice}</div>
+          {product.quantity !== undefined && (
+            <span className={`text-xs px-2 py-1 rounded ${product.quantity > 10 ? 'bg-success/20 text-success' : 'bg-destructive/20 text-destructive'}`}>
+              Stock: {product.quantity}
+            </span>
+          )}
         </div>
       </div>
 

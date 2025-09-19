@@ -31,9 +31,7 @@ export function ProductListView({ products, onEdit, onDelete }: ProductListViewP
               <div className="flex items-center gap-4 text-sm text-background/70">
                 <span>Cost: ₹{product.costPrice}</span>
                 <span>•</span>
-                <span>Sell: ₹{product.sellingPrice}</span>
-                <span>•</span>
-                <span>Lowest: ₹{product.lowestSellingPrice}</span>
+                <span>Selling: ₹{product.sellingPrice}</span>
               </div>
             </div>
             

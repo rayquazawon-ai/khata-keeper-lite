@@ -25,7 +25,6 @@ export function ProductTableView({ products, onEdit, onDelete }: ProductTableVie
             <TableHead className="text-background font-semibold">Product</TableHead>
             <TableHead className="text-background font-semibold">Cost Price</TableHead>
             <TableHead className="text-background font-semibold">Selling Price</TableHead>
-            <TableHead className="text-background font-semibold">Lowest Price</TableHead>
             <TableHead className="text-background font-semibold">Stock</TableHead>
             <TableHead className="text-background font-semibold text-right">Actions</TableHead>
           </TableRow>
@@ -53,7 +52,6 @@ export function ProductTableView({ products, onEdit, onDelete }: ProductTableVie
               
               <TableCell className="text-background">₹{product.costPrice}</TableCell>
               <TableCell className="text-background">₹{product.sellingPrice}</TableCell>
-              <TableCell className="text-background">₹{product.lowestSellingPrice}</TableCell>
               
               <TableCell>
                 <Badge 

@@ -48,7 +48,7 @@ export function ProductCardView({ products, onEdit, onDelete }: ProductCardViewP
               {product.productName}
             </h3>
             
-            {/* Pricing Grid */}
+            {/* Pricing Info */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="space-y-1">
                 <div className="text-xs text-background/60 uppercase tracking-wide">Cost</div>
@@ -60,18 +60,13 @@ export function ProductCardView({ products, onEdit, onDelete }: ProductCardViewP
                 <div className="font-semibold text-primary">₹{product.sellingPrice}</div>
               </div>
               
-              <div className="space-y-1">
-                <div className="text-xs text-background/60 uppercase tracking-wide">Lowest</div>
-                <div className="font-medium text-background">₹{product.lowestSellingPrice}</div>
-              </div>
-              
-              <div className="space-y-1">
+              <div className="col-span-2 space-y-1">
                 <div className="text-xs text-background/60 uppercase tracking-wide flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
-                  Margin
+                  Profit Margin
                 </div>
                 <div className="font-semibold text-success">
-                  {calculateMargin(product.sellingPrice, product.costPrice)}%
+                  {calculateMargin(product.sellingPrice, product.costPrice)}% • ₹{(product.sellingPrice - product.costPrice).toFixed(2)}
                 </div>
               </div>
             </div>
