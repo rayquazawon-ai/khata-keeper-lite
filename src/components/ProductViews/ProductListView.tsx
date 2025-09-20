@@ -1,4 +1,4 @@
-import { Edit, Trash2, Package } from "lucide-react";
+import { Edit, Trash2, Package, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -6,9 +6,10 @@ interface ProductListViewProps {
   products: any[];
   onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
+  onView?: (product: any) => void;
 }
 
-export function ProductListView({ products, onEdit, onDelete }: ProductListViewProps) {
+export function ProductListView({ products, onEdit, onDelete, onView }: ProductListViewProps) {
   return (
     <div className="space-y-2">
       {products.map((product) => (
@@ -46,19 +47,31 @@ export function ProductListView({ products, onEdit, onDelete }: ProductListViewP
           </div>
           
           <div className="flex items-center gap-2 ml-4">
+            {onView && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onView(product)}
+                className="hover:bg-primary/20 hover:text-primary border border-white-cool/30"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onEdit(product)}
-              className="hover:bg-primary/20 hover:text-primary"
+              className="hover:bg-primary/20 hover:text-primary border border-white-cool/30"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 mr-1" />
+              Edit
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onDelete(product.id)}
-              className="hover:bg-destructive/20 hover:text-destructive"
+              className="hover:bg-destructive/20 hover:text-destructive border border-white-cool/30"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

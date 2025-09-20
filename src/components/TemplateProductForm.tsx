@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { ArrowLeft, Calculator, Package, TrendingUp, CheckCircle } from "lucide-react";
+import { ArrowLeft, Calculator, Package, TrendingUp, CheckCircle, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { createProduct } from "@/lib/supabase";
 import { useOfflineStorage } from "@/hooks/useOfflineStorage";
@@ -26,6 +27,7 @@ interface PricingTemplate {
     marginPercent: number;
   };
   color: string;
+  isCustomizable?: boolean;
 }
 
 const PRICING_TEMPLATES: PricingTemplate[] = [
@@ -88,6 +90,19 @@ const PRICING_TEMPLATES: PricingTemplate[] = [
       marginPercent: 80
     },
     color: "bg-amber-50 border-amber-200 text-amber-800"
+  },
+  {
+    id: "custom",
+    name: "Custom Template",
+    description: "Set your own pricing multipliers",
+    icon: "⚙️",
+    formula: {
+      sellingPriceMultiplier: 2,
+      lowestPriceMultiplier: 1.5,
+      marginPercent: 50
+    },
+    color: "bg-gray-50 border-gray-200 text-gray-800",
+    isCustomizable: true
   }
 ];
 
@@ -98,6 +113,10 @@ export function TemplateProductForm({ onBack, onSuccess }: TemplateProductFormPr
   const [quantity, setQuantity] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'template' | 'product'>('template');
+  const [customTemplate, setCustomTemplate] = useState<PricingTemplate | null>(null);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [customMultiplier, setCustomMultiplier] = useState("2");
+  const [customLowestMultiplier, setCustomLowestMultiplier] = useState("1.5");
   
   const { toast } = useToast();
   const { addProductOptimistic, isOnline } = useOfflineStorage();
@@ -111,7 +130,46 @@ export function TemplateProductForm({ onBack, onSuccess }: TemplateProductFormPr
   };
 
   const handleTemplateSelect = (template: PricingTemplate) => {
+    if (template.isCustomizable) {
+      setShowCustomDialog(true);
+      return;
+    }
     setSelectedTemplate(template);
+    setStep('product');
+  };
+
+  const handleCustomTemplateCreate = () => {
+    const multiplier = parseFloat(customMultiplier);
+    const lowestMultiplier = parseFloat(customLowestMultiplier);
+    
+    if (isNaN(multiplier) || isNaN(lowestMultiplier) || multiplier <= 1 || lowestMultiplier <= 1) {
+      toast({
+        title: "Invalid Multipliers",
+        description: "Please enter valid multipliers greater than 1",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const marginPercent = ((multiplier - 1) * 100).toFixed(0);
+    
+    const newCustomTemplate: PricingTemplate = {
+      id: "custom",
+      name: "Custom Template",
+      description: `Custom pricing (${marginPercent}% margin)`,
+      icon: "⚙️",
+      formula: {
+        sellingPriceMultiplier: multiplier,
+        lowestPriceMultiplier: lowestMultiplier,
+        marginPercent: parseInt(marginPercent)
+      },
+      color: "bg-gray-50 border-gray-200 text-gray-800",
+      isCustomizable: true
+    };
+
+    setCustomTemplate(newCustomTemplate);
+    setSelectedTemplate(newCustomTemplate);
+    setShowCustomDialog(false);
     setStep('product');
   };
 
@@ -215,12 +273,15 @@ export function TemplateProductForm({ onBack, onSuccess }: TemplateProductFormPr
                   <div className="flex items-center gap-3">
                     <div className="text-2xl">{template.icon}</div>
                     <div>
-                      <CardTitle className="text-lg">{template.name}</CardTitle>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        {template.name}
+                        {template.isCustomizable && <Settings className="h-4 w-4 text-muted-foreground" />}
+                      </CardTitle>
                       <CardDescription>{template.description}</CardDescription>
                     </div>
                   </div>
                   <Badge className={template.color}>
-                    {template.formula.marginPercent}% margin
+                    {template.isCustomizable ? "Customizable" : `${template.formula.marginPercent}% margin`}
                   </Badge>
                 </div>
               </CardHeader>
@@ -228,21 +289,107 @@ export function TemplateProductForm({ onBack, onSuccess }: TemplateProductFormPr
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div className="text-center">
                     <div className="text-muted-foreground">Selling Price</div>
-                    <div className="font-semibold">Cost × {template.formula.sellingPriceMultiplier}</div>
+                    <div className="font-semibold">
+                      {template.isCustomizable ? "Cost × Custom" : `Cost × ${template.formula.sellingPriceMultiplier}`}
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-muted-foreground">Lowest Price</div>
-                    <div className="font-semibold">Cost × {template.formula.lowestPriceMultiplier}</div>
+                    <div className="font-semibold">
+                      {template.isCustomizable ? "Cost × Custom" : `Cost × ${template.formula.lowestPriceMultiplier}`}
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-muted-foreground">Target Margin</div>
-                    <div className="font-semibold text-success">{template.formula.marginPercent}%</div>
+                    <div className="font-semibold text-success">
+                      {template.isCustomizable ? "Custom%" : `${template.formula.marginPercent}%`}
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Custom Template Dialog */}
+        <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Customize Pricing Template
+              </DialogTitle>
+              <DialogDescription>
+                Set your own multipliers for calculating selling and lowest prices
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="sellingMultiplier">Selling Price Multiplier</Label>
+                <Input
+                  id="sellingMultiplier"
+                  type="number"
+                  step="0.1"
+                  min="1.1"
+                  value={customMultiplier}
+                  onChange={(e) => setCustomMultiplier(e.target.value)}
+                  placeholder="e.g., 2.0"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Selling Price = Cost Price × {customMultiplier || "2.0"}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="lowestMultiplier">Lowest Price Multiplier</Label>
+                <Input
+                  id="lowestMultiplier"
+                  type="number"
+                  step="0.1"
+                  min="1.1"
+                  value={customLowestMultiplier}
+                  onChange={(e) => setCustomLowestMultiplier(e.target.value)}
+                  placeholder="e.g., 1.5"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Lowest Price = Cost Price × {customLowestMultiplier || "1.5"}
+                </p>
+              </div>
+
+              {/* Preview */}
+              {customMultiplier && customLowestMultiplier && (
+                <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                  <h4 className="font-medium mb-2">Preview (Cost: ₹100)</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">Selling Price</div>
+                      <div className="font-semibold">₹{(100 * parseFloat(customMultiplier || "2")).toFixed(0)}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Lowest Price</div>
+                      <div className="font-semibold">₹{(100 * parseFloat(customLowestMultiplier || "1.5")).toFixed(0)}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <Badge variant="outline">
+                      {((parseFloat(customMultiplier || "2") - 1) * 100).toFixed(0)}% margin
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCustomDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCustomTemplateCreate}>
+                Create Template
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

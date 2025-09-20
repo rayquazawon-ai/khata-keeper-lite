@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import { SearchBar } from "./SearchBar";
 import { ProductCard } from "./ProductCard";
 import { EditProductForm } from "./EditProductForm";
+import { ProductDetailView } from "./ProductDetailView";
 import { ViewSwitcher, ViewMode } from "./ViewSwitcher";
 import { ProductListView } from "./ProductViews/ProductListView";
 import { ProductTableView } from "./ProductViews/ProductTableView";
@@ -24,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 export function InventoryTab() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [viewingProduct, setViewingProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
@@ -94,6 +96,23 @@ export function InventoryTab() {
     product.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleView = (product: any) => {
+    // Convert to database format for detailed view
+    const detailProduct = {
+      id: product.id,
+      product_name: product.productName,
+      cost_price: product.costPrice,
+      selling_price: product.sellingPrice,
+      lowest_selling_price: product.lowestSellingPrice,
+      discount_percent: product.discountPercent || null,
+      photos: product.photos || [],
+      quantity: product.quantity || null,
+      created_at: product.created_at || new Date().toISOString(),
+      updated_at: product.updated_at || new Date().toISOString()
+    };
+    setViewingProduct(detailProduct);
+  };
+
   const handleEdit = (product: any) => {
     // Convert mock data format to expected format
     const editableProduct = {
@@ -110,6 +129,7 @@ export function InventoryTab() {
 
   const handleEditSuccess = () => {
     setEditingProduct(null);
+    setViewingProduct(null); // Also close detail view if open
     // Refresh products from database if online
     if (isOnline) {
       fetchProducts();
@@ -155,6 +175,31 @@ export function InventoryTab() {
     setDeleteConfirmOpen(false);
     setProductToDelete(null);
   };
+
+  // Show detail view if viewing a product
+  if (viewingProduct) {
+    return (
+      <ProductDetailView
+        product={viewingProduct}
+        onBack={() => setViewingProduct(null)}
+        onEdit={(product) => {
+          // Convert to editable format
+          const editableProduct = {
+            id: product.id,
+            product_name: product.product_name,
+            cost_price: product.cost_price,
+            selling_price: product.selling_price,
+            lowest_selling_price: product.lowest_selling_price,
+            discount_percent: product.discount_percent,
+            photos: product.photos || []
+          };
+          setViewingProduct(null);
+          setEditingProduct(editableProduct);
+        }}
+        onDelete={handleDeleteClick}
+      />
+    );
+  }
 
   // Show edit form if editing
   if (editingProduct) {
@@ -206,6 +251,7 @@ export function InventoryTab() {
                   product={product}
                   onEdit={handleEdit}
                   onDelete={handleDeleteClick}
+                  onView={handleView}
                 />
               ))}
             </div>
@@ -216,6 +262,7 @@ export function InventoryTab() {
               products={filteredProducts}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              onView={handleView}
             />
           )}
           
@@ -224,6 +271,7 @@ export function InventoryTab() {
               products={filteredProducts}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              onView={handleView}
             />
           )}
           
@@ -232,6 +280,7 @@ export function InventoryTab() {
               products={filteredProducts}
               onEdit={handleEdit}
               onDelete={handleDeleteClick}
+              onView={handleView}
             />
           )}
         </>

@@ -1,4 +1,4 @@
-import { Edit, Trash2, Package } from "lucide-react";
+import { Edit, Trash2, Package, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,9 +14,10 @@ interface ProductTableViewProps {
   products: any[];
   onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
+  onView?: (product: any) => void;
 }
 
-export function ProductTableView({ products, onEdit, onDelete }: ProductTableViewProps) {
+export function ProductTableView({ products, onEdit, onDelete, onView }: ProductTableViewProps) {
   return (
     <div className="card-white overflow-hidden animate-fade-in">
       <Table>
@@ -63,12 +64,22 @@ export function ProductTableView({ products, onEdit, onDelete }: ProductTableVie
               </TableCell>
               
               <TableCell className="text-right">
-                <div className="flex items-center gap-2 justify-end">
+                <div className="flex justify-end gap-2">
+                  {onView && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onView(product)}
+                      className="hover:bg-primary/20 hover:text-primary border border-white-cool/30"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(product)}
-                    className="hover:bg-primary/20 hover:text-primary"
+                    className="hover:bg-primary/20 hover:text-primary border border-white-cool/30"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -76,7 +87,7 @@ export function ProductTableView({ products, onEdit, onDelete }: ProductTableVie
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(product.id)}
-                    className="hover:bg-destructive/20 hover:text-destructive"
+                    className="hover:bg-destructive/20 hover:text-destructive border border-white-cool/30"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

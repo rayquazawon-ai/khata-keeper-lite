@@ -1,4 +1,4 @@
-import { Edit, Trash2, Package, TrendingUp } from "lucide-react";
+import { Edit, Trash2, Package, TrendingUp, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -6,9 +6,10 @@ interface ProductCardViewProps {
   products: any[];
   onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
+  onView?: (product: any) => void;
 }
 
-export function ProductCardView({ products, onEdit, onDelete }: ProductCardViewProps) {
+export function ProductCardView({ products, onEdit, onDelete, onView }: ProductCardViewProps) {
   const calculateMargin = (selling: number, cost: number) => {
     return selling > 0 ? ((selling - cost) / selling * 100).toFixed(1) : "0";
   };
@@ -73,6 +74,17 @@ export function ProductCardView({ products, onEdit, onDelete }: ProductCardViewP
 
             {/* Action Buttons */}
             <div className="flex gap-2">
+              {onView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onView(product)}
+                  className="flex-1 hover:bg-primary/20 hover:text-primary border border-white-cool/30"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  View
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"

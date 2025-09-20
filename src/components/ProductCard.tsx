@@ -1,4 +1,4 @@
-import { Trash2, Camera, Edit3 } from "lucide-react";
+import { Trash2, Camera, Edit3, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Product {
@@ -15,9 +15,10 @@ interface ProductCardProps {
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
+  onView?: (product: Product) => void;
 }
 
-export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
+export function ProductCard({ product, onEdit, onDelete, onView }: ProductCardProps) {
   const hasPhoto = product.photos && product.photos.length > 0;
 
   return (
@@ -56,6 +57,17 @@ export function ProductCard({ product, onEdit, onDelete }: ProductCardProps) {
 
       {/* Actions */}
       <div className="flex gap-2 mt-4">
+        {onView && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onView(product)}
+            className="flex-1"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View
+          </Button>
+        )}
         <Button
           variant="outline" 
           size="sm"
