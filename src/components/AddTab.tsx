@@ -1,12 +1,12 @@
-import { Package, Zap, Table } from "lucide-react";
+import { Package, Zap, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { AddProductForm } from "@/components/AddProductForm";
-import { BulkProductSpreadsheet } from "@/components/BulkProductSpreadsheet";
+import { TemplateProductForm } from "@/components/TemplateProductForm";
 import { supabase } from "@/integrations/supabase/client";
 
 export function AddTab() {
-  const [currentView, setCurrentView] = useState<'main' | 'add-product' | 'bulk-spreadsheet'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'add-product' | 'template-add'>('main');
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   // Fetch recent activity from database
@@ -40,8 +40,8 @@ export function AddTab() {
     setCurrentView('add-product');
   };
 
-  const handleBulkAdd = () => {
-    setCurrentView('bulk-spreadsheet');
+  const handleTemplateAdd = () => {
+    setCurrentView('template-add');
   };
 
   const handleBack = () => {
@@ -58,8 +58,8 @@ export function AddTab() {
     return <AddProductForm onBack={handleBack} onSuccess={handleSuccess} />;
   }
 
-  if (currentView === 'bulk-spreadsheet') {
-    return <BulkProductSpreadsheet onBack={handleBack} onSuccess={handleSuccess} />;
+  if (currentView === 'template-add') {
+    return <TemplateProductForm onBack={handleBack} onSuccess={handleSuccess} />;
   }
 
   const quickActions = [
@@ -71,10 +71,10 @@ export function AddTab() {
       color: "bg-primary/10 text-primary border-primary/20"
     },
     {
-      title: "Bulk Add (Excel-like)",
-      description: "Add multiple products with formulas",
-      icon: Table,
-      action: handleBulkAdd,
+      title: "Template Add",
+      description: "Use pricing templates with auto-calculation",
+      icon: Calculator,
+      action: handleTemplateAdd,
       color: "bg-secondary/10 text-secondary border-secondary/20"
     }
   ];
